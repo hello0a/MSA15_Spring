@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>응답처리</title>
+</head>
+<body>
+    <h1>/response/index.html</h1>
+    <h3>응답 처리</h3>
+
+    <th:block th:if="${person != null}">
+        <h5 th:text="${person.name}"></h5>
+        <h5 th:text="${person.age}"></h5>
+    </th:block>
+
+    <h5 th:if="${message != null}" th:text="${message}"></h5>
+</body>
+</html>
