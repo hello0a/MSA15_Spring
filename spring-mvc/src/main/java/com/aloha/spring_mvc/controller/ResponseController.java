@@ -238,7 +238,7 @@ public class ResponseController {
         // 파일 입력
         // upload\test.png (지정된 경로를 찾을 수 없습니다)
         // String filePath = request.getSession().getServletContext().getRealPath(path);
-        String path = "/upload/test.png"; // resources/upload/test.png
+        String path = "/upload/test.png"; // resources/upload/test.png ..? 선생님은 upload.. 나는 /upload.. 인데 된다..
         String fileName = "test.png";
         
         byte[] fileData = null;
