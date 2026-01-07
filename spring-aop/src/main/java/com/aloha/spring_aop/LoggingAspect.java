@@ -25,6 +25,10 @@ import lombok.extern.slf4j.Slf4j;
  * : AOP(관점 지향 프로그래밍) 활용해서 BoardService의 모든 메서드 실행 전/후/예외/반환 값을
  *   자동으로 로그 찍어주는 기능
  * 
+ * AOP란?
+ * : 서비스 메서드들이 실행될 때마다 로그를 자동으로 남겨주는 클래스
+ * -> 서비스 메서드들이 실행되기 전/후/에러 발생 시 자동으로 끼어들어 동작하는 기능
+ * 
  * AOP를 현실에서 비유하면?
  * : 가게에서 알바생(BoardService) 일하고 있을 때,
  *   매니저(Aspect) 가 알바생이 일할 때마다 몰래 옆에서 기록하는 기능
@@ -52,6 +56,8 @@ import lombok.extern.slf4j.Slf4j;
 // : @Before, @After 같은 기능 사용 가능
 
 public class LoggingAspect {
+// Aspect(관점) 역할을 하는 클래스
+// : 로그 남기기 라는 기능을 서비스 전체에 적용하기 위해 존재
 
     // Advice
     // Point Cut : execution (접근제한자 반환타입 패키지.클래스.메서드(파라미터))
@@ -64,14 +70,27 @@ public class LoggingAspect {
     // : BoardService 로 시작하는 모든 서비스 클래스의 모든 메서드 실행 전에
     //   미리 이 Before() 코드를 실행해라!
     // 즉, 서비스가 일을 시작하기 전에, 매니저가 와서 '지금 어떤 메서드 실행할거지?' 하고 기록
+
+    // execution(...) : 적용 범위
+    // -> BoardService 로 시작하는 클래스의 모든 메서드에 적용
+    // 포인트컷! 어디에 끼어들지 결정하는 조건
+
     public void before(JoinPoint jp) {
+    // JoinPoint : 지금 실행하려는 타겟 메서드의 정보 들어있음
+    // -> 메서드 이름, 파라미터, 클래스 이름 등
         // jp.getSignature() : 타겟 메서드 시그니처 정보(반환 타입, 패키지.클래스.메서드) 반환
         // jp.getArgs()      : 타겟 메서드의 매개변수를 반환
         log.info("===============================================");
         log.info("[@Before]######################################");
         log.info("target : " + jp.getTarget().toString());
+        // jp.getTarget()
+        // : 어떤 객체의 메서드를 실행하려고 했는지 알려줌
         log.info("signature : " + jp.getSignature());
+        // jp.getSignature()
+        // : 메서드 이름, 반환 타입 같은 메서드 정보
         log.info("args : " + Arrays.toString(jp.getArgs()));
+        // jp.getArgs()
+        // : 메서드에 전달된 파라미터 값 목록
         // 파라미터 출력
         printParam(jp);
         log.info("===============================================");
@@ -82,6 +101,7 @@ public class LoggingAspect {
    // : BoardService 안의 모든 메서드가 실행되고 나면
    //   이 after()를 자동으로 실행해라!
    // 즉, 알바생이 일을 마치면, 매니저가 와서 '일 끝났음' 기록
+   // -> 정상 종료, 예외 발생 등 메서드가 끝나기만 하면 무조건 실행
     public void after(JoinPoint jp) {
         // jp.getSignature() : 타겟 메서드 시그니처 정보(반환 타입, 패키지.클래스.메서드) 반환
         // jp.getArgs()      : 타겟 메서드의 매개변수를 반환
@@ -105,6 +125,7 @@ public class LoggingAspect {
         returning = "result"
     )
     public void AfterReturning(JoinPoint jp, Object result) {
+    // result가 null 이 아니면 반환값 출력
         log.info("==============================================");
         log.info("[@AfterReturning] ####################################");
         log.info("target : {}", jp.getTarget());
@@ -120,6 +141,8 @@ public class LoggingAspect {
             result = (Board) result;
             log.info("반환값 : {}", result);
         }
+        // 반환값이 Board 객체면 형 변환해서 출력
+        // 즉, 알바생이 손님에게 무엇을 전달했는지 기록
         log.info("=========================================");
     }
 
@@ -136,8 +159,10 @@ public class LoggingAspect {
     //      int test = 10 / 0 때문에 무조건 실행
         pointcut = "execution(* com.aloha.spring_aop.service.BoardService*.*(..))",
         throwing = "exception"
+        // exception 매개변수로 발생한 예외 받기 가능
     )
     public void AfterThrowing(JoinPoint jp, Exception exception) {
+    // 어떤 메서드에서 어떤 에러가 났는지 기록
         log.info("==================================================");
         log.info("[@AfterThrowing] ########################################");
         log.info("target : " + jp.getTarget().toString());
@@ -159,8 +184,12 @@ public class LoggingAspect {
         // 타겟 메서드의 파라미터 이름 가져오기
         String[] parameterNames = ((MethodSignature) signature).getParameterNames();
         // 타겟 메서드의 파라미터 값 가져오기
+        // ex) ["id", "title", "content"]
         Object[] args = jp.getArgs();
         // 파라미터 이름과 값 출력
+        // 파라미터 값 목록
+        // : 둘을 같은 인덱스끼리 매칭해 출력
+        // ex) 파라미터명 : id, 값 : 5
         if( parameterNames != null ) {
             for (int i = 0; i < parameterNames.length; i++) {
                 String paramName = parameterNames[i];
@@ -201,6 +230,8 @@ public class LoggingAspect {
         Object result = null;
         try {
             result = jp.proceed();  // 타겟 메서드 호출
+            // 타겟 메서드 직접 호출
+            // : 호출하지 않으면 실제 메서드는 실행X
             if (result != null) 
                 log.info("반환값 : " + result.toString());
         } catch (Throwable e) {
@@ -208,7 +239,17 @@ public class LoggingAspect {
             e.printStackTrace();
         }
         after(jp);                  // @After 어드바이스 직접 호출
+        // @Around 사용 시 @After는 자동 실행X
         log.info("===============================================");
         return result;
     } 
+    /**
+     * 전체 흐름 요약
+     * 1. @Before : 메서드 시작하기 직전 실행 (메서드 실행 전)
+     * 2. @After : 끝나기만 하면 무조건 실행 (메서드 실행 후)
+     * 3. @AfterReturning : return 되어 정상 끝남 (정상 종료 시)
+     * 4. @AfterThrowing : 메서드 중간에 터짐 (예외 발생 시)
+     * 5. @Around : 전/중/후 모두 조정 가능 (전체 감싸기)
+     */
+    
 }
