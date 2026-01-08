@@ -2,11 +2,14 @@ package com.aloha.spring_mvc.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +26,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.aloha.spring_mvc.dto.Board;
 import com.aloha.spring_mvc.dto.Person;
 import com.aloha.spring_mvc.dto.PersonDTO;
+import com.aloha.spring_mvc.dto.User;
+import com.aloha.spring_mvc.service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -464,5 +469,36 @@ public class RequestController {
         }
         return "SUCCESS - 업로드 경로 : " + uploadPath;
     }
+
+    @Autowired
+    private UserService userService;
+
+    /**
+     * 날짜(date) 형식 요청 파라미터 바인딩하기
+     * 에러 500 : 단일 타입은 @RequestParam 붙어야 함
+     * @return
+     */
+    @ResponseBody
+    @PostMapping("/user")
+    // 1. 단일 문자열로 받기
+    // public String requestUser(@RequestParam("birth") String birth) {
+    // 2. Date 객체로 받기 -> 어노테이션 없이 LocalDate 를 Date 타입으로 바꾼다면?
+    //                      자동 변환 불가하므로 @DateTimeFormat(pattern) 붙이기!
+    //                      반대로 어노테이션 없이 LocalDate 사용한다면?
+    //                      자동으로 변환 및 바이딩 가능!
+    // public String requestUser(
+    //     @RequestParam("birth") 
+    //     @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate birth
+    // ) {
+    // 3. User 객체로 받기
+    public String requestUser(User user) {
+        log.info("[POST] - /request/user");
+        // log.info("birth : {}", birth);
+        log.info("user : {}", user);
+        boolean result = userService.signup(user);
+        log.info("result : {}", result);
+        return "SUCCESS";
+    }
+    
     
 }

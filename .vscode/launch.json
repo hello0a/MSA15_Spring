@@ -29,6 +29,16 @@
             "projectName": "spring-mvc",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-MybatisApplication<mybatis>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.aloha.mybatis.MybatisApplication",
+            "projectName": "mybatis",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }

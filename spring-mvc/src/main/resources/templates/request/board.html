@@ -94,5 +94,25 @@
     </form>
     
     <hr>
+    <h3>POST - 회원가입</h3>
+    <form action="/request/user" method="post">
+        <div>
+            <label for="username">아이디 : </label>
+            <input type="text" name="username" id="username">
+        </div>
+        <div>
+            <label for="password">비밀번호 : </label>
+            <input type="text" name="password" id="password">
+        </div>
+        <div>
+            <label for="name">이름 : </label>
+            <input type="text" name="name" id="name">
+        </div>
+        <div>
+            <label for="birth">생년월일 : </label>
+            <input type="date" name="birth" id="birth">
+        </div>
+        <input type="submit" value="회원가입">
+    </form>
 </body>
 </html>

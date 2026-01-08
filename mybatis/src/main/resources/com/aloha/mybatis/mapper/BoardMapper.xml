@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 위에 공백 있으면 희진님 처럼 에러 발생함! -->
+
+<!-- sql 과 Mapper 연결하기 위해 필요한 xml -->
+<!-- namespace="매퍼 인터페이스 경로" --> 
+<mapper namespace="com.aloha.mybatis.mapper.BoardMapper">
+    <!-- 게시글 목록 -->
+    <!-- <select id="list" resultType="com.aloha.mybatis.dto.Board"> -->
+    <!-- application.properties 에 등록되어 있으므로, dto 경로 생략 가능 -->
+
+    <!-- id 지정 -> 일치하는 메서드 만들어야 연결 가능 -->
+    <select id="list" resultType="Board">
+        SELECT *
+        FROM Board
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 게시글 조회 -->
+    <select id="select" resultType="Board">
+        SELECT *
+        FROM Board
+        WHERE no = #{no}
+    </select>
+
+    <!-- 게시글 등록 -->
+    <insert id="insert">
+        INSERT INTO board ( id, title, writer, content )
+        VALUES ( #{id}, #{title}, #{writer}, #{content}  )
+    </insert>
+
+    <!-- 게시글 수정 -->
+    <update id="update">
+        UPDATE board
+            SET title = #{title}
+                ,writer = #{writer}
+                ,content = #{content}
+        WHERE no = #{no}
+    </update>
+
+    <!-- 게시글 삭제 -->
+    <delete id="delete">
+        DELETE FROM board
+        WHERE no = #{no}
+    </delete>
+</mapper>
