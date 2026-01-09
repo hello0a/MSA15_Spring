@@ -27,8 +27,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
   <!-- 파일 등록 500 에러 : 달러 아니다,,, 샾이다,,,-->
   <insert id="insert">
-    INSERT INTO file ( id, parent_table, parent_no, name, path, size, sort_order, is_main )
-    VALUES (#{id}, #{parentTable}, #{parentNo}, #{name}, #{path}, #{size}, #{sortOrder}, #{isMain} )
+    INSERT INTO file ( id, parent_table, parent_no, name, path, size, content_type, sort_order, is_main )
+    VALUES (#{id}, #{parentTable}, #{parentNo}, #{name}, #{path}, #{size}, #{contentType}, #{sortOrder}, #{isMain} )
   </insert>
 
   <!-- 파일 수정 -->
@@ -40,7 +40,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="name != null">name = #{name},</if>
             <if test="path != null">path = #{path},</if>
             <if test="size != null">size = #{size},</if>
-            <if test="contenType != null">conent_type = #{contentType},</if>
+            <if test="contentType != null">content_type = #{contentType},</if>
             <if test="sortOrder != null">sort_order = #{sortOrder},</if>
             <if test="isMain != null">is_main = #{isMain},</if>
         </set>
@@ -55,7 +55,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="name != null">name = #{name},</if>
             <if test="path != null">path = #{path},</if>
             <if test="size != null">size = #{size},</if>
-            <if test="contenType != null">conent_type = #{contentType},</if>
+            <if test="contentType != null">content_type = #{contentType},</if>
             <if test="sortOrder != null">sort_order = #{sortOrder},</if>
             <if test="isMain != null">is_main = #{isMain},</if>
         </set>
