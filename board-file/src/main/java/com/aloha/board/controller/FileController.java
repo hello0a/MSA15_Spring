@@ -37,6 +37,10 @@ public class FileController {
     public ResponseEntity<Resource> viewFile(@PathVariable("id") String id) throws Exception {
         Files file = filesService.selectById(id);
         
+        if ( file == null ) {
+            return ResponseEntity.notFound().build();
+        }
+        
         FileSystemResource resource = new FileSystemResource(file.getPath());
 
         if (!resource.exists()) {
