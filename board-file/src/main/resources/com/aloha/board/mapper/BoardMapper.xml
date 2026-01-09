@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- namespace="매퍼 인터페이스 경로" --> 
+<mapper namespace="com.aloha.board.mapper.BoardMapper">
+
+<!-- resultMap 정의-->
+<!-- resultMap 지정 시 아래 boardMap을 기준으로 매핑 -->
+<!-- 뭔말인지 하나도 못 알아들음 resultMap 하는데 뭐하고 있대 -->
+<!-- 파일명 다르면 500 에러뜸 -->
+<resultMap id="boardMap" type="Board">
+  <id property="no" column="no" />
+  <result property="no" column="no"/>
+  <result property="title" column="title"/>
+  <result property="writer" column="writer"/>
+  <result property="content" column="content"/>
+  <result property="createdAt" column="created_at"/>
+  <result property="updatedAt" column="updated_at"/>
+  <collection property="fileList"
+              ofType="Files"
+              select="com.aloha.board.mapper.FilesMapper.listByParent"
+              column="{parentTable=parent_table, parentNo=no}"
+  />
+</resultMap>
+
+<!-- 위의 listByParent와 연결 -->
+<!-- 이거 Mapper.xml에 적혀있으면 위의 select 적을 때 경로 다 적어주랬는데 바로 옮겨버리심 -->
+
+  <!-- 게시글 목록 -->
+  <!-- <select id="list" resultType="com.aloha.board.dto.Board"> -->
+  <select id="list" resultMap="boardMap">
+    SELECT b.*
+          ,'board' AS parent_table
+    FROM board b
+    ORDER BY created_at DESC
+  </select>
+
+  <!-- 게시글 조회 -->
+  <select id="select" resultType="Board">
+    SELECT *
+    FROM board
+    WHERE no = #{no}
+  </select>
+
+  <!-- 게시글 등록 -->
+  <insert id="insert" useGeneratedKeys="true" keyProperty="no">
+    INSERT INTO board ( id, title, writer, content )
+    VALUES ( #{id}, #{title}, #{writer}, #{content} )
+  </insert>
+
+  <!-- 게시글 수정 -->
+  <update id="update">
+    UPDATE board
+       SET title = #{title}
+          ,writer = #{writer}
+          ,content = #{content}
+    WHERE no = #{no}
+  </update>
+
+  <!-- 게시글 삭제 -->
+  <delete id="delete">
+    DELETE FROM board
+    WHERE no = #{no}
+  </delete>
+</mapper>
