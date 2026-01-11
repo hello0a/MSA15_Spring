@@ -37,11 +37,13 @@ public class BoardDAO {
         Board board = new Board(1L, "제목01", "작성자01","내용01");
         return board;
         // 특정 글 한개 조회 select
-        // 
+        // : AOP 테스트용 미니 버전
     }
     public int insert(Board board) {
         int result = 1;
         return result;
+        // 글 삽입 insert
+        // : 성공하면1, 실패하면 0 반환하는 구조
     }
     public int update(Board board) {
         int result = 1;

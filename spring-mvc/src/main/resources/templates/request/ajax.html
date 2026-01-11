@@ -45,27 +45,52 @@
    
    <!-- script -->
    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+   <!-- 해당 스크립트
+        : 게시글 + 파일 업로드를 AJAX 로 서버(Spring Boot)에게 보내는 역할 
+        브라우저
+        1. 폼 데이터 수집 (title, writer, content)
+        2. 선택된 파일들 fildList[] FormData 에 추가
+        3. AJAX POST 전송 (/request/file/ajax)
+        4. Spring 컨트롤러에게 @RequestParam / @ModelAttribute 로 받음 -->
+
    <script>
    // 등록 버튼 - 클릭 이벤트
    $('#btn-insert').on('click', function() {
+   // form 태그 submit 사용이 아닌, Ajax 로 직접 케어
       // 등록 요청
       let formData = new FormData()       // 폼 데이터 객체
+      // FormData 생성
+      // : 파일 업로드를 위한 필수 객체
+      //   multipart/form-data 형태 자동으로 만들어줌!
+      //   일반 JSON 으로는 파일 보내기 불가능이므로 FormData 필수!
 
       let title = $('#title').val()
       let writer = $('#writer').val()
       let content = $('#content').val()
+      // 입력값 가져오기
+      // : input, textarea에서 가져옴!
       
       formData.append('title', title)
       formData.append('writer', writer)
       formData.append('content', content)
+      // FormData 에 텍스트 데이터 추가
+      // : 해당 키들이 그대로 Spring 컨트롤러의 파라미터 이름과 매칭됨!
       
       // 파일 입력 가져오기
       let file = $('#file')[0]
       let files = file.files
+      // 파일 처리
+      // : <input type="file" id="file" multiple> 요소에서 파일 목록 가져오기
+
       // 파일 데이터 추가
       for (let i = 0; i < files.length; i++) {
         formData.append('fileList', files[i])
       }
+      // 파일 배열을 FormData 에 추가
+      // : fileList -> spring 의 Board 클래스 필드 이름과 동일!
+      //   MultipartFile 과 자동 매핑됨
+      //   여러개 파일 append 하면 Spring에서 list로 인식!
+
 
       let url = '/request/file/ajax'
       $.ajax({
@@ -73,10 +98,11 @@
           type            :   'POST',
           data            :   formData,
           contentType     :   false,
-          processData     :   false,      // 데이터 컨텐츠 타입 자동 변환 여부
-                                          // 기본값(true) 
-                                          // true  -> contentType  : application/x-www-form-urlencoded
-                                          // false -> contentType  : 데이터를 자동으로 처리하지 않고 직접 지정
+          processData     :   false,      
+          // 데이터 컨텐츠 타입 자동 변환 여부
+        // 기본값(true) 
+        // true  -> contentType  : application/x-www-form-urlencoded
+        // false -> contentType  : 데이터를 자동으로 처리하지 않고 직접 지정
           success         : function(response) {
               if( response == 'SUCCESS' ){
                   alert('등록이 완료되었습니다.')

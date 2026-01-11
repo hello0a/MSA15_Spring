@@ -4,9 +4,14 @@
 	<meta charset="UTF-8">
 	<title>/model/person</title>
 </head>
+<!-- 전체 요약
+ 	: Person 객체를 화면에 출력하고,
+	  두 개의 폼을 통해 Person 데이터를 POST 요청으로 서버에 전송하는 페이지 -->
 <body>
 	<h1>이름 : <th:block th:text="${person.name}"></th:block></h1>
 	<h1>나이 : <th:block th:text="${person.age}"></th:block></h1>
+	<!-- th:block th:text="${person.name}" 
+	 	: Spring 에서 Model 에 담아준 person 객체 꺼내서 출력!-->
 	
 	<hr>
 	
@@ -15,6 +20,8 @@
 		<input type="text" name="age" th:value="${person.age}" />  <br>
 		<input type="submit" value="등록1" /> 
 	</form>
+	<!-- name="?"
+	 	으로 파라미터 전송됨 -->
 
 	<hr>
 	

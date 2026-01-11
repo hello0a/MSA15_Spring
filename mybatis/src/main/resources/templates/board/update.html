@@ -37,6 +37,9 @@
     </form>
     <script>
         let form = document.getElementById('form')
+        // form DOM 객체 가져옴
+        // : action 변경하거나 submit() 호출하기 위해 필요!
+
         // 👩‍💻 모델 객체를 자바스크립트로 가져오는 방법
         let no = "[[${board.no}]]"
         
@@ -48,6 +51,12 @@
                 form.submit()
             }
         }
+        // 삭제 버튼 클릭 시
+        // action 을 /board/delete 로 변경해서 submit() 호출
+        // -> form 태그 id="form" 넣어둔 것!
+        // 즉, 수정버튼과 삭제버튼 같은 form 공유하지만
+        //      JS로 action 만 바꿔서 다른 작업하게 만드는 구조
+
         // 목록 화면 이동
         function moveList() {
             location.href = '/board/list'

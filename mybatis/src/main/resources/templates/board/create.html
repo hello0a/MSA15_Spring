@@ -8,10 +8,41 @@
 <body>
     <h1>게시글 등록</h1>
     <form action="/board/create" method="post">
+        <!-- POST 요청 (/board/create 주소로)
+            : Controller 의 @PostMapping("/create") 와 연결 -->
         <input type="text" name="title" id="title">
         <input type="text" name="writer" id="writer">
         <input type="text" name="content" id="content">
+        <!-- input name
+            : Board의 필드와 자동 매핑 
+            -> spring 은 request parameter 의 "title" 을
+                Board 객체의 setTitle() 에 자동으로 넣는다! (스프링 바인딩)
+            즉, HTML name="title"
+                -> Board.title 필드로 자동 입력 -->
         <input type="submit" value="등록">
     </form>
 </body>
 </html>
+<!-- name 과 id 차이
+    name : 서버로 데이터 전달 (폼 전송의 핵심 / 중복 가능)
+    -> 서버로 "데이터 이름" 보내는 역할
+    -> 폼 submit 하면,
+        title=안녕하세요&wrtier=홍길동&content=내용입니다
+        * title, writer, content -> name 값
+    -> 즉,
+        spring 의 Board board 객체로 자동 매핑될 때
+        request parameter 의 name 값이 필드명과 연결
+    -> 결론
+        폼 데이터가 서버로 넘어가려면, 반드시 name 필수!
+
+    id : HTML 요소 식별 (자바스크립트, label 연결 / 페이지 내 유일(중복X))
+    -> 화면(UI) 에서 쓰는 용도
+    -> label 과 연결될 때
+        <label for="title">제목</label>
+        <input id="title" name="title">
+    -> JavaScript 에서 요소 찾을 때
+        document.getElementById("title")
+    -> CSS 에서 스타일 적용 시
+        #title { color: red; }
+    -> 즉,
+        서버로 전송되지 않으며, 한 페이지에서 중복되면 안됨! -->
