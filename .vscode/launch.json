@@ -69,6 +69,16 @@
             "projectName": "board-file",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-AjaxApplication<ajax>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.aloha.ajax.AjaxApplication",
+            "projectName": "ajax",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }

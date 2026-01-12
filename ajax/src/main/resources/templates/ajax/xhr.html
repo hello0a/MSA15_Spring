@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XMLHttpRequest</title>
+</head>
+<body>
+    <h1>XMLHttpRequest</h1>
+
+    <h5>게시글 조회</h5>
+    <label for="no">게시글 번호</label>
+    <input type="text" name="no" id="no">
+    <button onclick="getBoard()">조회</button>
+    <hr>
+    <div>
+        <h5>조회된 게시글 정보</h5>
+        <h3><span>제목 : </span><span id="title"></span></h3>
+        <h3><span>작성자 : </span><span id="writer"></span></h3>
+        <textarea id="content" cols="50" rows="10" readonly></textarea>
+    </div>
+
+    <hr>
+    <h3>게시글 목록</h3>
+    <table id="board-list" border="1">
+        <tr id="board-title">
+            <th width="50">번호</th>
+            <th width="300">제목</th>
+            <th width="100">작성자</th>
+            <th width="200">등록일자</th>
+            <th width="200">수정일자</th>
+        </tr>
+        <tr id="board-data">
+            <td colspan="5" align="center">조회된 데이터가 없습니다.</td>
+        </tr>
+    </table>
+
+    <div style="height: 1000px;"></div>
+
+    <script>
+        let request
+
+        //게시글 조회
+        function getBoard() {
+            // XMLHttpRequest 객체 생성
+            request = new XMLHttpRequest()
+            // 입력한 글 번호 가져오기
+            let no = document.getElementById("no").value
+            // 요청 설정
+            let url = `http://127.0.0.1:8080/api/boards/${no}`
+            request.open('GET', url, true)
+         
+            // 요청 전송
+            request.send()
+
+            // onload : 로드(응답) 완료 이벤트 핸들러
+            request.onload = function() {
+                 let response = ''
+
+                // 요청 완료 및 응답 성공
+                if (request.status == 200) {
+                    // request.responseText = 응답데이터
+                    response = request.responseText
+
+                    if (response == '') {
+                        alert('응답된 데이터가 없습니다.')
+                    } else {
+                        // JSON.parse() : JSON 문자열 -> JS 객체 변환
+                        let board = JSON.parse( response )
+
+                        let title = document.getElementById("title")
+                        let writer = document.getElementById("writer")
+                        let content = document.getElementById("content")
+
+                        title.textContent = board.title
+                        writer.textContent = board.writer
+                        content.textContent = board.content
+                    }
+                }
+            }
+
+            // 응답 확인 - 준비 상태 변경 이벤트 핸들러
+            // request.onreadystatechange = function () {
+            //     let response = ''
+
+            //     // 요청 완료 및 응답 성공
+            //     if (request.readyState == request.DONE && request.status == 200) {
+            //         // request.responseText = 응답데이터
+            //         response = request.responseText
+
+            //         if (response == '') {
+            //             alert('응답된 데이터가 없습니다.')
+            //         } else {
+            //             // JSON.parse() : JSON 문자열 -> JS 객체 변환
+            //             let board = JSON.parse( response )
+
+            //             let title = document.getElementById("title")
+            //             let writer = document.getElementById("writer")
+            //             let content = document.getElementById("content")
+
+            //             title.textContent = board.title
+            //             writer.textContent = board.writer
+            //             content.textContent = board.content
+            //         }
+            //     }
+            // }
+        }
+
+        // 게시글 목록 조회
+        function getList() {
+            // XMLHttpRequest 객체 생성
+            request = new XMLHttpRequest()
+
+            // 요청 설정
+            let url = `http://127.0.0.1:8080/api/boards`
+            request.open('GET', url, true)
+         
+            // 요청 전송
+            request.send()
+
+            // onload : 로드(응답) 완료 이벤트 핸들러
+            request.onload = function() {
+                 let response = ''
+
+                // 요청 완료 및 응답 성공
+                if( request.status == 200 ) {
+                    // request.responseText = 응답데이터
+                    response = request.responseText
+                    // JSON.parse()  : JSON 문자열 -> JS 객체 변환
+                    let boardList = JSON.parse(response)
+                    // 데이터 없을 때
+                    if( boardList.length == 0 ) 
+                        alert('응답된 데이터가 없습니다.')
+                    // 데이터 있을 때
+                    else {
+                        let $boardData = document.getElementById('board-data')
+                        let $boardList = document.getElementById('board-list')
+                        // 데이터 초기화
+                        // $boardData.remove()
+                        // : board-data 비워짐 -> 조회된 데이터 없습니다! 없어짐
+                        $boardData.innerHTML = ''
+
+                        for( const board of boardList ) {
+                            let tr = `<tr>
+                                        <td>${board.no}</td>
+                                        <td>${board.title}</td>
+                                        <td>${board.writer}</td>
+                                        <td>${board.createdAt}</td>
+                                        <td>${board.updatedAt}</td>
+                                        </tr>`
+                            // 기존 innerHTML 이어서 tr 태그 추가
+                            // : board-list 아래로 추가되는 것!
+                            $boardList.innerHTML += tr
+                        }
+                    }
+                }
+            }
+        }
+        // 게시글 목록 함수 호출
+        getList()
+    </script>
+</body>
+</html>
