@@ -35,6 +35,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
               select="com.aloha.board.mapper.FilesMapper.listByParent"
               column="{parentTable=parent_table, parentNo=no}"
   />
+  <!-- M:N (다대다) 매핑 -->
   <!-- 가장 어려운 collection
       : Board 안에 있는 fileList(List<Files>) 를 채워라! 
       1. fileList : DTO 변수 이름
@@ -71,9 +72,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
           나중에 file 테이블과 조인할 때 부모 테이블 이름 사용됨
       -> 여러 개의 row 들을 List<Board> 로 반환하는 메서드 -->
   <!-- 게시글 조회 -->
-  <select id="select" resultType="Board">
-    SELECT *
-    FROM board
+  <select id="select" resultMap="boardMap">
+    SELECT b.*
+          ,'board' AS parent_table
+    FROM board b
     WHERE no = #{no}
   </select>
 
