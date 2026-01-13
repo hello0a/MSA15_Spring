@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>XMLHttpRequest</title>
 </head>
+
 <body>
     <h1>XMLHttpRequest</h1>
 
@@ -19,7 +20,35 @@
         <h3><span>작성자 : </span><span id="writer"></span></h3>
         <textarea id="content" cols="50" rows="10" readonly></textarea>
     </div>
-
+    <!-- 서버에서 받은 JSON 데이터 여기에 출력 -->
+    <hr>
+    <h3>게시글 등록/수정/삭제</h3>
+    <form action="/api/boards" method="post">
+        <table>
+            <tr>
+                <td><label for="title">제목</label></td>
+                <td><input type="text" name="title" id="input-title"></td>
+            </tr>
+            <tr>
+                <td><label for="writer">작성자</label></td>
+                <td><input type="text" name="writer" id="input-writer"></td>
+            </tr>
+            <tr>
+                <td><label for="content">내용</label></td>
+                <td>
+                    <textarea name="content" id="input-content" cols="50" rows="10"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="updateNo">글번호</label></td>
+                <td><input type="text" name="no" id="input-no" placeholder="수정/삭제 번호"></td>
+            </tr>
+        </table>
+        <button type="button" onclick="insert()">등록하기</button>
+        <button type="button" onclick="update()">수정하기</button>
+        <button type="button" onclick="remove()">삭제하기</button>
+        <!-- delete 는 js 예약어 있으므로 설정할 수 없으니, remove 사용 -->
+    </form>
     <hr>
     <h3>게시글 목록</h3>
     <table id="board-list" border="1">
@@ -30,28 +59,42 @@
             <th width="200">등록일자</th>
             <th width="200">수정일자</th>
         </tr>
-        <tr id="board-data">
-            <td colspan="5" align="center">조회된 데이터가 없습니다.</td>
-        </tr>
+        <tbody id="board-body">
+            <tr id="board-data">
+                <td colspan="5" align="center">조회된 데이터가 없습니다.</td>
+            </tr>
+        </tbody>
+        <!-- 나중에 JS에서 실제 데이터로 바뀜 -->
     </table>
 
     <div style="height: 1000px;"></div>
-
+<!-- 전체 구조 설명
+    : HTML 화면에서 버튼 누르면 JS -> Spring (서버) 요청 보내고 -> 서버 응답 (JSON) 받아 화면에 표시 -->
     <script>
         let request
+        // 전역 변수
+        // : AJAX 요청 보낼 때 사용할 XMLHttpRequest 객체 담을 변수
 
         //게시글 조회
         function getBoard() {
             // XMLHttpRequest 객체 생성
             request = new XMLHttpRequest()
+            // : 서버와 데이터를 주고받는 옛날 방식 AJAX 객체
+            // -> 서버에 요청 보내는 도구
+            // -> 브라우저가 제공하는 내장 객체
+            // 비유 : 우체국에서 '편지 보낼 봉투' 하나 가져오는 느낌
+
             // 입력한 글 번호 가져오기
             let no = document.getElementById("no").value
             // 요청 설정
             let url = `http://127.0.0.1:8080/api/boards/${no}`
             request.open('GET', url, true)
+            // : GET 방식으로, 특정 글 번호 요청하는 URL에, 비동기 방식(true)으로 요청하겠다 의미
          
             // 요청 전송
             request.send()
+            // : 서버로 요청 보내기
+            // -> GET 요청은 바디가 없으므로, send() 안에 아무것도 안 넣음
 
             // onload : 로드(응답) 완료 이벤트 핸들러
             request.onload = function() {
@@ -67,6 +110,7 @@
                     } else {
                         // JSON.parse() : JSON 문자열 -> JS 객체 변환
                         let board = JSON.parse( response )
+                        // : 문자열은 board.title 처럼 접근 불가능
 
                         let title = document.getElementById("title")
                         let writer = document.getElementById("writer")
@@ -75,6 +119,8 @@
                         title.textContent = board.title
                         writer.textContent = board.writer
                         content.textContent = board.content
+                        // 화면에 표시
+                        // : DOM 조작
                     }
                 }
             }
@@ -92,6 +138,7 @@
             //             alert('응답된 데이터가 없습니다.')
             //         } else {
             //             // JSON.parse() : JSON 문자열 -> JS 객체 변환
+            //             // 문자열로는 객체 변수 사용 불가!
             //             let board = JSON.parse( response )
 
             //             let title = document.getElementById("title")
@@ -108,6 +155,7 @@
 
         // 게시글 목록 조회
         function getList() {
+        // : 페이지 열릴 때 자동 호출
             // XMLHttpRequest 객체 생성
             request = new XMLHttpRequest()
 
@@ -128,6 +176,7 @@
                     response = request.responseText
                     // JSON.parse()  : JSON 문자열 -> JS 객체 변환
                     let boardList = JSON.parse(response)
+                    // : 서버에서 [ {...}, {...}, .. ] 형태의 배열(JSON)을 보냄
                     // 데이터 없을 때
                     if( boardList.length == 0 ) 
                         alert('응답된 데이터가 없습니다.')
@@ -135,29 +184,175 @@
                     else {
                         let $boardData = document.getElementById('board-data')
                         let $boardList = document.getElementById('board-list')
+                        let $boardBody = document.getElementById('board-body')
                         // 데이터 초기화
                         // $boardData.remove()
                         // : board-data 비워짐 -> 조회된 데이터 없습니다! 없어짐
-                        $boardData.innerHTML = ''
+                        $boardBody.innerHTML = ''
 
+                        let tr = ''
                         for( const board of boardList ) {
-                            let tr = `<tr>
-                                        <td>${board.no}</td>
-                                        <td>${board.title}</td>
-                                        <td>${board.writer}</td>
-                                        <td>${board.createdAt}</td>
-                                        <td>${board.updatedAt}</td>
-                                        </tr>`
+                            tr += `<tr>
+                                    <td>${board.no}</td>
+                                    <td>${board.title}</td>
+                                    <td>${board.writer}</td>
+                                    <td>${board.createdAt}</td>
+                                    <td>${board.updatedAt}</td>
+                                  </tr>`
                             // 기존 innerHTML 이어서 tr 태그 추가
                             // : board-list 아래로 추가되는 것!
-                            $boardList.innerHTML += tr
                         }
+                        $boardBody.innerHTML = tr
+                        // 목록 테이블 새로 채우기
+                        // : 문자열로 HTML 계속 더하여, 마지막에 innerHTML로 한 번에 출력
                     }
                 }
             }
         }
         // 게시글 목록 함수 호출
         getList()
+
+        // 게시글 등록
+        function insert() {
+            request = new XMLHttpRequest()
+
+            // 입력 정보
+            let title = document.getElementById("input-title").value
+            let writer = document.getElementById("input-writer").value
+            let content = document.getElementById("input-content").value
+
+            // 객체
+            let data = {
+                'title' : title,
+                'writer' : writer,
+                'content' : content,
+            }
+            // : JS 객체로 만든 것
+
+            // 요청 설정
+            let url = `http://127.0.0.1:8080/api/boards`
+            request.open('POST', url, true)
+
+            // 헤더 설정
+            // 415 에러 : Content-type 지정X
+            request.setRequestHeader("Content-Type", "application/json")
+            // : 서버에게 나는 JSON 형태로 보낼거야! 알려줌
+
+            // 응답 확인
+            request.onload = function() {
+                let response = ''
+                if(request.status == 201) {
+                    response = request.responseText
+                    alert(response)
+                    // 등록 후 목록 갱신
+                    getList()
+                }
+
+                if(request.status == 400) {
+                    alert("클라이언트의 잘못된 요청")
+                }
+                if(request.status == 500) {
+                    alert("서버 내부 에러")
+                }
+            }
+            // 요청 전송
+            // JSON.stringify() : JS 객체 -> JSON 문자열 반환
+            request.send( JSON.stringify(data) )
+            // : 서버는 문자열만 이해함
+            // -> Js 객체를 JSON 문자열로 변환해야 서버읽을 수 있음
+        }
+
+        // 게시글 수정
+        function update() {
+            request = new XMLHttpRequest()
+
+            // 입력 정보
+            let no = document.getElementById("input-no").value
+            let title = document.getElementById("input-title").value
+            let writer = document.getElementById("input-writer").value
+            let content = document.getElementById("input-content").value
+
+            // 객체
+            let data = {
+                'no' : no,
+                'title' : title,
+                'writer' : writer,
+                'content' : content
+            }
+
+            // 요청 설정
+            let url = `http://127.0.0.1:8080/api/boards`
+            request.open('PUT', url, true)
+
+            // 헤더 설정
+            request.setRequestHeader("Content-Type", "application/json")
+
+            // 응답 확인
+            request.onload = function () {
+                let response = ''
+                // 요청 성공
+                if ( request.status == 200) {
+                    response = request.responseText
+                    alert(response)
+                    getList()
+                }
+                // 요청 실패
+                if(request.status == 400) {
+                    alert("클라이언트의 잘못된 요청")
+                }
+                if(request.status == 500) {
+                    alert("서버 내부 에러")
+                }
+            }
+            // 요청 전송
+            // JSON.stringify(data) : 객체 -> JSON 문자열 반환
+            request.send( JSON.stringify(data) )
+        }
+        // 게시글 삭제하기
+        function remove() {
+            request = new XMLHttpRequest()
+
+            // 입력정보
+            let no = document.getElementById('input-no').value            
+
+            // DELETE 요청 방식은 요청 데이터를 URL에 포함하여 전송 (GET 방식 동일)
+            // 요청 설정
+            let url = `http://127.0.0.1:8080/api/boards/${no}`
+            request.open('DELETE', url, true)
+
+            // 응답 확인
+            request.onload = function () {
+                let response = ''
+
+                // 요청 성공
+                if (request.status == 200) {
+                    response = request.responseText
+                    alert(response)
+                    getList()
+                }
+                if(request.status == 400) {
+                    alert("클라이언트의 잘못된 요청")
+                }
+                if(request.status == 500) {
+                    alert("서버 내부 에러")
+                }
+            }
+            // 요청 전송
+            request.send()
+        }
     </script>
 </body>
 </html>
+<!-- 꼭 이해해야할 핵심 요약
+    1. XMLHttpRequest : 서버와 통신하는 옛날 방식의 AJAX 도구
+        -> Fetch API 나오기 전 방식
+    2. 서버의 응답은 무조건 "문자열(JSON)"
+        -> JSON.parse() 로 JS 객체로 바꿔야 사용 가능
+    3. 서버로 데이터 보낼 때는 객체를 바로 못 보냄
+        -> JSON.stringify() 해야함
+    4. Content-Type 꼭 지정해야 서버가 JSON 임을 알 수 있음
+        -> request.setRequestHeader("Content-Type", "application/json") 
+    5. 응답 성공 시 onload 에서 처리
+    
+    ** 서버 : 스프링부트 / 클라이언트 : 사용자-->
+    
