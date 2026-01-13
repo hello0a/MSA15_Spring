@@ -1,9 +1,14 @@
 package com.aloha.board.controller;
 
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -14,9 +19,10 @@ import com.aloha.board.service.FilesService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 @Slf4j
@@ -63,6 +69,46 @@ public class FileController {
         //               ex) image/png -> 올바르게 설정해야 제대로 열림
         // .body(resource) : 아까 만든 파일 Resource 를 응답 본문에 담아서 반환
     }
+    /**
+     * 부모기준 파일 목록
+     * @param parentTable
+     * @param parentNo
+     * @return
+     */
+    @GetMapping("/{parentTable}/{parentNo}")
+    public ResponseEntity<?> listByParent(
+        @PathVariable("parentTable") String parentTable,
+        @PathVariable("parentNo") Integer parentNo
+    ) {
+        try {
+            Files file = new Files();
+            file.setParentTable(parentTable);
+            file.setParentNo(parentNo);
+            List<Files> fileList = filesService.listByParent(file);
+            return new ResponseEntity<>(fileList, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * 파일 삭제
+     * @param id
+     * @return
+     * @throws Exception
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<?,?>> deleteFile(@PathVariable("id") String id) throws Exception {
+        boolean result = filesService.deleteById(id);
+        if ( !result ) {
+            return ResponseEntity.notFound().build();
+        }
+        Map<String,Object> response = new HashMap<>();
+        response.put("SUCCESS", true);
+        return ResponseEntity.ok(response);
+    }
+    
     /**
      * 전체 동작 요약
      * 1. URL 에서 id 받아옴

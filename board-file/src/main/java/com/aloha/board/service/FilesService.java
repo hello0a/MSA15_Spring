@@ -23,4 +23,6 @@ public interface FilesService {
   boolean deleteById(String id) throws Exception;
   // 파일 업로드 (추가)
   int upload(List<MultipartFile> files, ParentTable parentTable, Integer parentNo) throws Exception;
+  // 부모 기준 목록
+  List<Files> listByParent(Files files) throws Exception;
 }

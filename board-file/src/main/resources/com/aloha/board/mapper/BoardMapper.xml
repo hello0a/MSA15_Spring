@@ -30,12 +30,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   <result property="content" column="content"/>
   <result property="createdAt" column="created_at"/>
   <result property="updatedAt" column="updated_at"/>
+  <!-- M:N (다대다) 매핑 -->
   <collection property="fileList"
               ofType="Files"
               select="com.aloha.board.mapper.FilesMapper.listByParent"
               column="{parentTable=parent_table, parentNo=no}"
   />
-  <!-- M:N (다대다) 매핑 -->
   <!-- 가장 어려운 collection
       : Board 안에 있는 fileList(List<Files>) 를 채워라! 
       1. fileList : DTO 변수 이름

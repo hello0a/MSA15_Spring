@@ -21,4 +21,6 @@ public interface FilesMapper {
   // 파일 삭제
   int delete(Integer no) throws Exception;
   int deleteById(String id) throws Exception;
+  // 부모 기준 목록
+  List<Files> listByParent(Files files) throws Exception;
 }

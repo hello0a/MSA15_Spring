@@ -65,6 +65,9 @@ public class BoardController {
     // : @PathVariable 그 역할 수행
         try {
             Board board = boardService.select(no);
+            if (board==null) {
+                return new ResponseEntity<>("FAIL", HttpStatus.NOT_FOUND);
+            }
             return new ResponseEntity<>(board, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
