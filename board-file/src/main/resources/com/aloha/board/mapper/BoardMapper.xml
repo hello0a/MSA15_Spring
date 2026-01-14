@@ -30,6 +30,26 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   <result property="content" column="content"/>
   <result property="createdAt" column="created_at"/>
   <result property="updatedAt" column="updated_at"/>
+  <!-- 썸네일 없을 때 경우,,, 추가,, 
+      나중에 로그인 넘버가 게시글로 들어가서 게시글의 작성자를 User객체 안에서 꺼내오는 것-->
+  <!-- 1:1 (일대일) 매핑 -->
+  <association property="mainFile"
+              javaType="Files"
+              select="com.aloha.board.mapper.FilesMapper.selectByParent"
+              column="{parentTable=parent_table, parentNo=no}"
+  />
+  <!-- association - 1:1 매핑
+      1. mainFile : DTO 변수 이름
+        -> Board 객체 안에 mainFile 이라는 객체 1개 들어감
+      2. Files : 타입은 Files 라는 단일 객체
+      3. com.~ : 서브쿼리로 파일 1개 가져옴 (대표 파일)
+      4. {parentTable~} : filesMapper 의 selectByParent 메서드에 파라미터 2개 전달 -->
+
+  <!-- javaType vs ofType
+    1. javaType : 객체 하나의 타입 (단일 객체 매핑)
+      -> 결과 1개
+    2. ofType : 리스트 안 요소들의 타입 (컬렉션 매핑)
+      -> 결과 여러개 (List, Set 등) -->
   <!-- M:N (다대다) 매핑 -->
   <collection property="fileList"
               ofType="Files"

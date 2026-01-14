@@ -73,12 +73,43 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     WHERE id = #{id}
   </delete>
 
-    <!-- 부모 기준 목록 -->
-    <select id="listByParent" resultType="Files">
-        SELECT *
-        FROM file
-        WHERE parent_table = #{parentTable}
-            AND parent_no = #{parentNo}
-        ORDER BY sort_order ASC, created_at DESC
-    </select>
+  <!-- 부모 기준 목록 -->
+  <select id="listByParent" resultType="Files">
+      SELECT *
+      FROM file
+      WHERE parent_table = #{parentTable}
+          AND parent_no = #{parentNo}
+      ORDER BY sort_order ASC, created_at DESC
+  </select>
+
+  <!-- 부모 기준 파일 목록 삭제 -->
+  <delete id="deleteByParent">
+    DELETE FROM file
+    WHERE parent_table = #{parentTable}
+          AND parent_no = #{parentNo}
+  </delete>
+
+  <!-- 첨부파일 등록 시 숫자랑 대표 중복으로 인해 추가 
+      : resultType 은 sort_order 이므로 int-->
+  <select id="nextSortOrderByParent" resultType="int">
+    SELECT IFNULL( MAX(sort_order) + 1, 0 ) AS sort_order
+    FROM file
+    WHERE parent_table = #{parentTable}
+        AND parent_no = #{parentNo}
+  </select>
+
+  <!-- 썸네일 아무것도 없을 때,,, 추가  ( 메인 파일 조회 )-->
+  <select id="selectByParent" resultType="Files">
+    SELECT *
+    FROM file
+    WHERE parent_table = #{parentTable}
+        AND parent_no = #{parentNo}
+        AND is_main = 1
+    LIMIT 1
+    <!-- LIMIT 1
+      특정 게시글(parent) 속한 파일 중
+      is_main = 1 로 표시된 대표 파일 가져오고
+      그 중에서도 딱 1개만 가져온다!
+      -> 게시글 대표 이미지(썸네일)을 찾는 쿼리 -->
+  </select>
 </mapper>

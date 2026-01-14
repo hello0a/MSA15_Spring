@@ -79,6 +79,26 @@
             "projectName": "ajax",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-ValidationApplication<validation>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.aloha.validation.ValidationApplication",
+            "projectName": "validation",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-BoardApplication<board-page>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.aloha.board.BoardApplication",
+            "projectName": "board-page",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }
