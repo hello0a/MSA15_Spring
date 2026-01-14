@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.aloha.board.dto.Board;
 import com.aloha.board.dto.Pagination;
@@ -52,6 +53,14 @@ public class BoardController {
     // 모델 등록
     model.addAttribute("pagination", pagination);
     model.addAttribute("list", list);
+    // Uri 빌더 : String url = "/board/list?page=" + page + "&size=" + size;
+    // -> 자동으로 처리
+    String pageUri = UriComponentsBuilder.fromPath("/board/list")
+                                          .queryParam("size",pagination.getSize())
+                                          .queryParam("count",pagination.getCount())
+                                          .build()
+                                          .toUriString();
+    model.addAttribute("pageUri", pageUri);
     // 뷰 지정
     return "board/list";
   }

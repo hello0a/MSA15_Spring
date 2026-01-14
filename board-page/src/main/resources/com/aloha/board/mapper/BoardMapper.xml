@@ -124,6 +124,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     DELETE FROM board
     WHERE no = #{no}
   </delete>
+  
   <!-- 데이터 개수 조회 -->
   <select id="count" resultType="long">
     SELECT COUNT(*)
