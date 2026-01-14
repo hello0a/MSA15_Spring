@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.aloha.board.dto.Board;
 import com.aloha.board.dto.Files;
+import com.aloha.board.dto.Pagination;
 import com.aloha.board.dto.ParentTable;
 import com.aloha.board.mapper.BoardMapper;
 
@@ -82,6 +83,15 @@ public class BoardServiceImpl implements BoardService {
     int fileResult = filesService.deleteByParent(file);
     log.info("파일 삭제 - {} 개 파일 삭제", fileResult);
     return result > 0;
+  }
+
+  @Override
+  public List<Board> page(Pagination pagination) throws Exception {
+    // 데이터 수 조회
+    long total = boardMapper.count();
+    pagination.setTotal(total);
+    List<Board> list = boardMapper.page(pagination);
+    return list;
   }
   
 }

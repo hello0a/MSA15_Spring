@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.aloha.board.dto.Board;
+import com.aloha.board.dto.Pagination;
 import com.aloha.board.service.BoardService;
 
 import lombok.RequiredArgsConstructor;
@@ -39,12 +40,17 @@ public class BoardController {
    * @throws Exception
    */
   @GetMapping("/list")
-  public String list(Model model) throws Exception {
+  public String list(
+    Model model,
+    Pagination pagination
+  ) throws Exception {
     // 데이터 요청
-    List<Board> list = boardService.list();
+    // List<Board> list = boardService.list();
+    List<Board> list = boardService.page(pagination);
     log.info("### 게시글 목록 ###");
     log.info("#" + list);
     // 모델 등록
+    model.addAttribute("pagination", pagination);
     model.addAttribute("list", list);
     // 뷰 지정
     return "board/list";

@@ -1,5 +1,6 @@
 -- 샘플 데이터
 TRUNCATE TABLE `board`;
+TRUNCATE TABLE `file`;
 
 INSERT INTO `board` ( id, title, writer, content )
 SELECT
