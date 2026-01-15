@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- namespace="매퍼 인터페이스 경로" --> 
+<mapper namespace="com.aloha.product_rest.mapper.ProductMapper">
+    <!-- 목록 -->
+    <!-- properties :  com.aloha.product_rest.mapper. 있거나
+            Alias : 별칭 Product 와 동일하게 있다면
+            resultType 에 해당 경로 쓸 필요 없음! -->
+    <select id="list" resultType="Product">
+        SELECT *
+        FROM product
+    </select>
+    <!-- 조회 -->
+    <select id="select" resultType="Product">
+        SELECT *
+        FROM product
+        WEHRE no = #{no}
+    </select>
+    
+    <select id="selectById" resultType="Product">
+        SELECT *
+        FROM product
+        WEHRE id = #{id}
+    </select>
+
+    <!-- 등록 -->
+    <insert id="insert">
+        INSERT INTO product ( id, name, price, stock)
+        VALUES ( #{id}, #{name}, #{price}, #{stock})
+    </insert>
+    <!-- 수정 -->
+    <update id="update">
+        UPDATE product
+            <set>
+                <if test="name != null">name = #{name},</if>
+                <if test="price != null">price = #{price},</if>
+                <if test="stock != null">stock = #{stock},</if>
+            </set>
+        WHERE no = #{no}
+    </update>
+
+    <update id="updateById">
+        UPDATE product
+            <set>
+                <if test="name != null">name = #{name},</if>
+                <if test="price != null">price = #{price},</if>
+                <if test="stock != null">stock = #{stock},</if>
+            </set>
+        WHERE id = #{id}
+    </update>
+    <!-- 삭제 -->
+    <delete id="delete">
+        DELETE FROM product
+        WHERE no = #{no}
+    </delete>
+
+    <delete id="deleteById">
+        DELETE FROM product
+        WHERE id = #{id}
+    </delete>
+</mapper>

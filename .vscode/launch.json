@@ -109,6 +109,26 @@
             "projectName": "board-pagehelper",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-ProductRestApplication<product-rest>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.aloha.product_rest.ProductRestApplication",
+            "projectName": "product-rest",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-ProductRestApplication<swagger>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.aloha.product_rest.ProductRestApplication",
+            "projectName": "swagger",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }
