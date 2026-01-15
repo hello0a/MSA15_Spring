@@ -99,6 +99,16 @@
             "projectName": "board-page",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-BoardApplication<board-pagehelper>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.aloha.board.BoardApplication",
+            "projectName": "board-pagehelper",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }
