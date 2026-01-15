@@ -93,11 +93,22 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
       : resultType 은 sort_order 이므로 int-->
   <select id="nextSortOrderByParent" resultType="int">
     SELECT IFNULL( MAX(sort_order) + 1, 0 ) AS sort_order
+    <!-- MAX(sort_order)
+        : 해당 부모(parent_table + parent_no) 를 가진 파일들 중 가장 큰 sort_order 가져옴
+         MAX(sort_order) + 1
+        : 다음 파일이 들어갈 다음 순서 번호 만듦
+         IFNULL(..., 0)
+        : 만약 부모에 연결된 파일이 하나도 없다면 MAX(sort_order) null 이므로 그때는 0 반환!-->
     FROM file
     WHERE parent_table = #{parentTable}
+    <!-- 어떤 부모 테이블(BOARD 등) 속한 파일들인지 찾기 -->
         AND parent_no = #{parentNo}
+    <!-- 어떤 게시글 번호 파일인지 구분 -->
   </select>
-
+  <!-- SQL 요약
+    : 지금 부모 객체(게시글)에 파일 추가하려고 하는데,
+      그 파일의 다음 순서번호(sort_order) 계산해줘! -->
+      
   <!-- 썸네일 아무것도 없을 때,,, 추가  ( 메인 파일 조회 )-->
   <select id="selectByParent" resultType="Files">
     SELECT *

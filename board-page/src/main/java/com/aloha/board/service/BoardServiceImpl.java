@@ -73,13 +73,24 @@ public class BoardServiceImpl implements BoardService {
   
   @Override
   @Transactional // 트랜잭션 처리 : 2개 이상의 데이터베이스 요청에서 하나라도 실패하면 전체를 롤백한다
+  // 트랜잭션
+  // : 실행되는 여러DB 작업을 하나의 작업처럼 취급
+  // -> 하나라도 실패한다면? 모두 취소(롤백)
+  // -> 게시글 삭제 성공 + 파일 삭제 실패 같은 불완전한 상황 발생X 
   public boolean delete(Integer no) throws Exception {
     // 게시글 삭제
     int result = boardMapper.delete(no);
     // 첨부파일 삭제
     Files file = new Files();
+    // : 파일 삭제를 위해 필요한 정보 담을 Files 객체 생성
     file.setParentTable(ParentTable.BOARD.value());
+    // 어떤 테이블의 파일인지 설정
+    // : BOARD 라는 enum 값의 실제 문자열 넣는 방식
+    // -> "board" 같은 값!
     file.setParentNo(no);
+    // 어떤 게시글의 파일인지 설정
+    // : 삭제하려는 게시글 번호 넣은 것
+    // -> 이 게시글에 속한 파일들 삭제해!
     int fileResult = filesService.deleteByParent(file);
     log.info("파일 삭제 - {} 개 파일 삭제", fileResult);
     return result > 0;
