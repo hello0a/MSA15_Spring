@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <title>게시판 프로젝트</title>
+</head>
+<body>
+    <main>
+       <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-12">
+                <!-- <div class="col-12 col-sm-12(모바일) col-md-12(테블릿) col-lg-12(pc) col-xl-12(그 이상)"> -->
+                    <h1 class="text-center">게시글 목록</h1>
+                    <div class="d-flex justify-content-end">
+                        <a href="/board/create" class="btn btn-primary">글쓰기</a>
+                    </div>
+                    <!-- 페이지 보기 추가! -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div></div>
+                        <div class="d-flex align-items-center gap-2">
+                            <select class="form-select" onchange="changeSort()" id="sortCreatedAt">
+                            <option value="">등록일시 정렬</option>
+                            <option value="DESC">최근순</option>
+                            <option value="ASC">오래된순</option>
+                            </select>
+                            <select class="form-select" onchange="changeSort()" id="sortTitle">
+                            <option value="">제목 정렬</option>
+                            <option value="DESC">제목 내림차순</option>
+                            <option value="ASC">제목 오름차순</option>
+                            </select>
+                            <select class="form-select" 
+                                    th:field="${pagination.size}"
+                                    onchange=" changeFilter()">
+                                <option value="5">5개씩 보기</option>
+                                <option value="10">10개씩 보기</option>
+                                <option value="30">30개씩 보기</option>
+                                <option value="50">50개씩 보기</option>
+                                <option value="100">100개씩 보기</option>
+                            </select>
+                        </div>
+                    </div>
+                    <table class="table table-bordered table-striped table-hover table-responsive mt-3 text-center">
+                        <colgroup>
+                            <col class="col-2">     <!-- 썸네일-->
+                            <col class="col-1">     <!-- 번호-->
+                            <col class="col-3">     <!-- 제목-->
+                            <col class="col-2">     <!-- 작성자-->
+                            <col class="col-2">     <!-- 등록일자-->
+                            <col class="col-2">     <!-- 수정일자-->
+                        </colgroup>
+                        <tr class="table-dark">
+                            <th>썸네일</th>
+                            <th width="150">번호</th>
+                            <th width="300">제목</th>
+                            <th>작성자</th>
+                            <th>등록일자</th>
+                            <th>수정일자</th>
+                        </tr>
+                        <th:block th:if="${ list == null || list.isEmpty() }">
+                            <tr>
+                                <td colspan="6">조회된 데이터가 없습니다.</td>
+                            </tr>
+                        </th:block>
+                        <th:block th:each="board : ${list}">
+                            <tr class="align-middle">
+                                <td>
+                                    <!-- <th:block th:if="${ board.fileList != null && !board.fileList.isEmpty() }">
+                                        <img th:src="@{/files/{id}(id=${board.fileList[0].id})}" class="img-fluid"/>
+                                    </th:block> -->
+                                    <!-- 아래 추가,,, -->
+                                    <!-- 썸네일(메인파일) 있을 때 -->
+                                    <th:block th:if="${ board.mainFile != null }">
+                                        <!-- if : 대표파일만 가져오겠다 조건 (없으면 모든 이미지파일 가져옴) 
+                                            img-fluid : 이미지가 부모 요소의 너비 넘지 않도록 자동 조절
+                                                        -> 이미지 너무 크면 부모 너비 맞춰서 축소
+                                                      : 세로 비율은 유지하면서 자동 크기 조절
+                                                      : 모바일에서 화면 크기에 맞게 알아서 리사이징
+                                                        -> ## 반응형 페이지 만들 때 필 수 클래스 ##
+                                            th:src="@{/files/{id}(id=${board.mainFile.id})}
+                                                      : /files/{id} 경로에 board.mainFile.id 값 집어넣어서 실제 요청 URL 만드는 것
+                                                      -> <img src="..."> 를 서버 데이터 기반으로 만드는 것
+                                                      -> {id} 와 (id=) 색상 동일!
+                                                      -> 이미지 URL 정적이 아니라, 게시글마다 대표 이미지(mainFile) ID 다르기 대문!-->
+                                        <img th:src="@{/files/{id}(id=${board.mainFile.id})}" class="img-fluid"/>
+                                    </th:block>
+                                    <!-- 썸네일9메인파일) 없을 때 : 기본 이미지 -->
+                                    <th:block th:if="${board.mainFile == null}">
+                                        <img src="https://placehold.co/200x120?text=No+Image"class="img-fluid" />
+                                    </th:block>
+                                </td>
+                                <td th:text="${board.no}">번호</td>
+                                <td class="text-start">
+                                    <a th:href="|/board/detail?no=${board.no}|"
+                                        th:text="${board.title}">제목</a>
+                                </td>
+                                <td th:text="${board.writer}">작성자</td>
+                                <td>
+                                    <span th:text="${ #dates.format( board.createdAt, 'yyyy-MM-dd HH:mm:ss' )}">
+                                        등록일자
+                                    </span>
+                                </td>
+                                <td>
+                                    <span th:text="${ #dates.format( board.updatedAt, 'yyyy-MM-dd HH:mm:ss' )}">
+                                        수정일자
+                                    </span>
+                                </td>
+                            </tr>
+                        </th:block>
+                    </table>
+                    <div class="d-flex justify-content-between align-items-center my-3">
+                        <div class="">
+                            <p class="text-secondary">
+                                <!-- 직접 계산 -->
+                                <!-- 총 게시물 수 : <span th:text="${pagination.total}">0</span> -->
+                                총 게시물 수 : <span th:text="${pageInfo.total}">0</span>
+                            </p>
+                        </div>
+                        <div>
+                            <select class="form-select" 
+                                    th:field="${pagination.count}"
+                                    onchange="changeFilter()">
+                                <option value="5">페이지 개수 : 5</option>
+                                <option value="10">페이지 개수 : 10</option>
+                                <option value="15">페이지 개수 : 15</option>
+                                <option value="20">페이지 개수 : 20</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- 페이지 번호 -->
+                     <nav aria-label="Page navigation" th:object="${pagination}"
+                            class="d-flex justify-content-center">
+                        <ul class="pagination">
+                            <!-- [첫] -->
+                            <li class="page-item">
+                                <!-- <a class="page-link" th:href="@{/board/list(page=*{first}, size=*{size}, count = *{count})}"> -->
+                                    <!-- Uri 빌더 -->
+                                <a class="page-link" th:href="@{ ${pageUri } + '&page=' + *{first} }">
+                                    <!-- &laquo : << 이 기호! -->
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            <!-- [이전] -->
+                            <li class="page-item" th:if="${pagination.page != pagination.first}">
+                                <!-- <a class="page-link" th:href="@{/board/list(page=*{prev}, size=*{size}, count = *{count})}"> -->
+                                <a class="page-link" th:href="@{${pageUri } + '&page=' + *{prev} }">
+                                    <!-- &laquo : << 이 기호! -->
+                                    <span aria-hidden="true">&lsaquo;</span>
+                                </a>
+                            </li>
+                            <!-- [번호] -->
+                             <th:block th:each="page : *{ #numbers.sequence( start, end ) }">
+                                 <li class="page-item" th:classappend="${pagination.page == page} ? 'active' : '' " aria-current="page">
+                                    <!-- *{page} 가 아닌 ${page} 
+                                        : pagination 이 아닌 위의 th:each page 의미 -->
+                                     <!-- <a class="page-link" th:href="@{/board/list(page=${page}, size=*{size}, count = *{count})}" th:text="${page}"></a> -->
+                                     <a class="page-link" th:href="@{${pageUri } + '&page=' + ${page} }" th:text="${page}"></a>
+                                 </li>
+                             </th:block>
+                             <!-- [다음] -->
+                            <li class="page-item" th:if="${pagination.page != pagination.last}">
+                                <!-- <a class="page-link" th:href="@{/board/list(page=*{next}, size=*{size}, count = *{count})}" > -->
+                                <a class="page-link" th:href="@{${pageUri } + '&page=' + *{next} }" >
+                                    <span aria-hidden="true">&rsaquo;</span>
+                                </a>
+                            </li>
+                             <!-- [마지막] -->
+                            <li class="page-item">
+                                <!-- <a class="page-link" th:href="@{/board/list(page=*{last}, size=*{size}, count = *{count})}"> -->
+                                <a class="page-link" th:href="@{${pageUri } + '&page=' + *{last} }">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                     </nav>
+                    <!-- 페이지 번호 (추가) -->
+                     <nav aria-label="Page navigation" class="d-flex justify-content-center">
+                        <ul class="pagination">
+                            <!-- [첫] -->
+                            <li class="page-item">
+                                <a class="page-link" th:href="@{ ${pageUri } + '&page=1' }">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            <!-- [이전] -->
+                            <li class="page-item" th:if="${pagination.page != pagination.first}">
+                                <a class="page-link" th:href="@{${pageUri } + '&page=' + ${pageInfo.prePage} }">
+                                    <span aria-hidden="true">&lsaquo;</span>
+                                </a>
+                            </li>
+                            <!-- [번호] -->
+                             <!-- 위 아래 동일 : 로그에 찍힌 navigatepageNums 활용 -->
+                             <!-- <th:block th:each="page : ${ #numbers.sequence( pageInfo.navigateFirstPage, pageInfo.navigateLastPage ) }"> -->
+                             <th:block th:each="page : ${ pageInfo.navigatepageNums }">
+                                 <li class="page-item" th:classappend="${pagination.page == page} ? 'active' : '' " aria-current="page">
+                                     <a class="page-link" th:href="@{${pageUri } + '&page=' + ${page} }" th:text="${page}"></a>
+                                 </li>
+                             </th:block>
+                             <!-- [다음] -->
+                            <li class="page-item" th:if="${pagination.page != pagination.last}">
+                                <a class="page-link" th:href="@{${pageUri } + '&page=' + ${pageInfo.nextPage} }" >
+                                    <span aria-hidden="true">&rsaquo;</span>
+                                </a>
+                            </li>
+                             <!-- [마지막] -->
+                            <li class="page-item">
+                                <a class="page-link" th:href="@{${pageUri } + '&page=' + ${pageInfo.pages} }">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                     </nav>
+                    </div>
+                </div>
+            </div>
+       </div>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function changeSort() {
+            // /board/list?page=1&sortBy=title,created_at&sortOrder=ASC,DESC
+            const sortCreatedAt = document.getElementById("sortCreatedAt").value;
+            const sortTitle = document.getElementById("sortTitle").value;
+            let currentPath = window.location.pathname;
+            // URL 객체
+            // loacation.href : 현재 페이지의 URL 전체
+            const url = new URL(window.location.href);
+            // let url = currentPath = '?page=1'
+            
+            // 현재 페이지 1로 초기화
+            url.searchParams.set("page", 1);
+            
+            const sortBy = []       // 정렬 기준 컬럼명
+            const sortOrder = []    // 정렬 방향(ASC, DESC)
+            
+            if( sortCreatedAt ) {
+                sortBy.push("created_at");
+                sortOrder.push( sortCreatedAt );
+            }
+            
+            if( sortTitle ) {
+                sortBy.push("title");
+                sortOrder.push( sortTitle );
+            }
+            
+            if( sortBy.length > 0 ) {
+                // URL?sortBy=created_at, title
+                url.searchParams.set("sortBy", sortBy.join(","));
+                // URL?sortBy=created_at, title&sortOrder=DESC,ASC
+                url.searchParams.set("sortOrder", sortOrder.join(","));
+            } else {
+                url.searchParams.delete("sortBy");
+                url.searchParams.delete("sortOrder");
+            }
+            // 페이지 이동
+            window.location.href = url.toString();
+        }
+        
+        // 정렬 기준 selected 초기화
+        function initOrder() {
+            // 현재 URL 객체
+            const url = new URL(window.location.href);
+            
+            // 정렬 파라미터 - sortBy, sortOrder
+            const sortBy = url.searchParams.get("sortBy");      //created_at, title
+            const sortOrder = url.searchParams.get("sortOrder"); // DESC, ASC
+            
+            // /board/list?page=1&sortBy=created_at,title&sortOrder=DESC,ASC
+            const sortByArr = sortBy ? sortBy.split(",") : [];
+            const sortOrderArr = sortOrder ? sortOrder.split(",") : [];
+            
+            sortByArr.forEach( (col, idx) => {
+                const order = sortOrderArr[idx];
+                // 정렬 select 에 selected 설정
+                if ( col == "created_at" ) {
+                    document.getElementById( "sortCreatedAt" ).value = order;
+                } else if ( col == "title" ) {
+                    document.getElementById( "sortTitle" ).value = order;
+                }
+            })
+        }
+        initOrder();
+
+        // 페이지당 데이터 수 변경
+        function changeFilter() {
+            const size = document.getElementById("size").value;
+            const count = document.getElementById("count").value;
+            let currentPath = window.location.pathname;
+
+            // URL 객체
+            // location.href : 현재 페이지의 URL 전체 (예 : ~/board/list?page=1&sortBy=title&sortOrder=ASC)
+            const url = new URL(window.location.href);
+
+            // 현재 페이지 1로 초기화
+            url.searchParams.set("page", 1);
+            if ( size ) { url.searchParams.set("size", size);}
+            if ( count ) { url.searchParams.set("count", count);}
+
+            // 페이지 이동
+            window.location.href = url.toString();
+        }
+        </script>
+</body>
+</html>

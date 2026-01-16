@@ -129,6 +129,16 @@
             "projectName": "swagger",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-BoardApplication<board-filter>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.aloha.board.BoardApplication",
+            "projectName": "board-filter",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }

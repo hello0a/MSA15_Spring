@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- namespace="매퍼 인터페이스 경로" --> 
+<mapper namespace="com.aloha.board.mapper.BoardMapper">
+
+<!-- resultMap 정의-->
+<!-- resultMap 지정 시 아래 boardMap을 기준으로 매핑 -->
+<!-- 뭔말인지 하나도 못 알아들음 resultMap 하는데 뭐하고 있대 -->
+<!-- 파일명 다르면 500 에러뜸 -->
+
+<!-- resultMap 이란?
+    단순 매핑 resultType
+    ex) <select id="list" resultType="Board">
+      DB 컬럼 이름 = DTO 변수 이름 같을 때만 자동 매핑
+      -> application.properties map-underscore-to-camel-case=true 을 통해서
+         created_at → createdAt 자동 변환 (자동 매핑)
+    But,
+    여러 에티블 jOIN 한다면 자동 매핑 불가!
+    resultMapt
+    : DB 결과를 어떻게 DTO 에 채울것이지 직접 알려주는 매핑 규칙표(설계도)
+-->
+<resultMap id="boardMap" type="Board">
+  <id property="no" column="no" />
+  <result property="no" column="no"/>
+  <result property="title" column="title"/>
+  <result property="writer" column="writer"/>
+  <result property="content" column="content"/>
+  <result property="createdAt" column="created_at"/>
+  <result property="updatedAt" column="updated_at"/>
+  <!-- 썸네일 없을 때 경우,,, 추가,, 
+      나중에 로그인 넘버가 게시글로 들어가서 게시글의 작성자를 User객체 안에서 꺼내오는 것-->
+  <!-- 1:1 (일대일) 매핑 -->
+  <association property="mainFile"
+              javaType="Files"
+              select="com.aloha.board.mapper.FilesMapper.selectByParent"
+              column="{parentTable=parent_table, parentNo=no}"
+  />
+  <!-- association - 1:1 매핑
+      1. mainFile : DTO 변수 이름
+        -> Board 객체 안에 mainFile 이라는 객체 1개 들어감
+      2. Files : 타입은 Files 라는 단일 객체
+      3. com.~ : 서브쿼리로 파일 1개 가져옴 (대표 파일)
+      4. {parentTable~} : filesMapper 의 selectByParent 메서드에 파라미터 2개 전달 -->
+  <!-- M:N (다대다) 매핑 -->
+  <collection property="fileList"
+              ofType="Files"
+              select="com.aloha.board.mapper.FilesMapper.listByParent"
+              column="{parentTable=parent_table, parentNo=no}"
+  />
+  <!-- 가장 어려운 collection
+      : Board 안에 있는 fileList(List<Files>) 를 채워라! 
+      1. fileList : DTO 변수 이름
+        -> List<Files> fileList; 여기에 데이터 넣겠다는 의미
+      2. Files : filelist 안에 들어갈 객체 타입
+        -> Files DTO
+      3. com.~ : fileList 채울 때 어떤 SQL 실행할지 지정
+        -> Board 1건 가져올 때마다 FilesMapper.listByParent() 실행해서
+          관련된 파일 목록 가져와 fileList에 넣어준다는 의미
+        -> select : 가져올 SQL 지정
+      4. {parantTable ~} : listByParent() 메서드에 넘길 파라미터를 DB 컬럼에서 꺼내서 전달
+        -> listByParent(parentTable="board", parentNo=5)
+        -> coloumn : select 에 넘길 파라미터 매핑
+-->
+</resultMap>
+<!-- resultMap 매핑 설계도
+    property : DTO변수
+    column : DB컬럼 -->
+
+<!-- 위의 listByParent와 연결 -->
+<!-- 이거 Mapper.xml에 적혀있으면 위의 select 적을 때 경로 다 적어주랬는데 바로 옮겨버리심 -->
+
+  <!-- 게시글 목록 -->
+  <!-- <select id="list" resultType="com.aloha.board.dto.Board"> -->
+  <select id="list" resultMap="boardMap">
+    SELECT b.*
+          ,'board' AS parent_table
+    FROM board b
+    ORDER BY created_at DESC
+  </select>
+
+  <!-- 게시글 목록 -->
+  <!-- 추가! parameterType 안 해도 자동 바인딩 되지만 파라미터타입이 여러개일 때는 구분을 위해 필요할 수 있음 -->
+  <select id="listWithParam" parameterType="Params" resultMap="boardMap">
+    SELECT b.*
+          ,'board' AS parent_table
+    FROM board b
+    <if test="sortBy != null and sortBy.size() > 0">
+      ORDER BY
+      <foreach collection="sortBy" item="column" index="idx" separator=", ">
+      <!-- $ : 컬럼처럼 키워드로 판단
+          order by title desc 로, order by 'title' 'desc' 문자열처럼 만들지 않음! -->
+        ${column} 
+        <if test="sortOrder != null and sortOrder.size() > idx">
+          ${sortOrder[idx]}
+        </if>
+      </foreach>
+    </if>
+    <if test="sortBy == null or sortBy.size() == 0">
+      ORDER BY created_at DESC
+    </if>
+  </select>
+  <!-- DB에서 board 테이블 전체 가져오는 쿼리
+      : b.* -> board 테이블의 모든 컬럼
+      : 'board' AS parent_table -> 문자열 그대로 "board" 라는 값을 컬럼처럼 추가
+          나중에 file 테이블과 조인할 때 부모 테이블 이름 사용됨
+      -> 여러 개의 row 들을 List<Board> 로 반환하는 메서드 -->
+
+  <!-- 페이징 목록 -->
+  <select id="page" resultMap="boardMap">
+    SELECT b.*
+        ,'board' AS parent_table
+    FROM board b
+    ORDER BY created_at DESC
+    LIMIT #{index}, #{size}
+  </select>  
+
+  <!-- 페이징 목록 -->
+  <select id="pageWithParam" parameterType="Params" resultMap="boardMap">
+    SELECT b.*
+        ,'board' AS parent_table
+    FROM board b
+    <!-- 정렬 추가3!! -->
+    <!-- ${} : 키워드 그대로 쿼리에 적용 String keyword="테스트" -> 테스트-->
+    <!-- #{} : String'문자열값', Integer숫자값('' OK!) -->
+    <if test="sortBy != null and sortBy.size() > 0">
+      ORDER BY
+      <foreach collection="sortBy" item="column" index="idx" separator=", ">
+      <!-- $ : 컬럼처럼 키워드로 판단
+          order by title desc 로, order by 'title' 'desc' 문자열처럼 만들지 않음! -->
+        ${column} 
+        <if test="sortOrder != null and sortOrder.size() > idx">
+          ${sortOrder[idx]}
+        </if>
+      </foreach>
+    </if>
+    <if test="sortBy == null or sortBy.size() == 0">
+      ORDER BY created_at DESC
+    </if>
+    <!--  # : 변수 안에 있는 값 전달 
+        DB 는 ' ' (String)  있어도O없어도O (Integer) 로 구분되기 때문에 그 타입을 구별해줌-->
+    LIMIT #{index}, #{size}
+  </select>    
+
+  <!-- 페이징 목록 -->
+  <!-- 여러 파라미터를 @Param 으로 넘긴다면, parameterType 생략! -->
+  <select id="pageWithPaginationAndParam" resultMap="boardMap">
+    SELECT b.*
+        ,'board' AS parent_table
+    FROM board b
+    <!-- 정렬 추가3!! -->
+    <!-- ${} : 키워드 그대로 쿼리에 적용 String keyword="테스트" -> 테스트-->
+    <!-- #{} : String'문자열값', Integer숫자값('' OK!) -->
+    <if test="params.sortBy != null and params.sortBy.size() > 0">
+      ORDER BY
+      <foreach collection="params.sortBy" item="column" index="idx" separator=", ">
+      <!-- $ : 컬럼처럼 키워드로 판단
+          order by title desc 로, order by 'title' 'desc' 문자열처럼 만들지 않음! -->
+        ${column} 
+        <if test="params.sortOrder != null and params.sortOrder.size() > idx">
+          ${params.sortOrder[idx]}
+        </if>
+      </foreach>
+    </if>
+    <if test="params.sortBy == null or params.sortBy.size() == 0">
+      ORDER BY created_at DESC
+    </if>
+    <!--  # : 변수 안에 있는 값 전달 
+        DB 는 ' ' (String)  있어도O없어도O (Integer) 로 구분되기 때문에 그 타입을 구별해줌-->
+    LIMIT #{pagination.index}, #{pagination.size}
+  </select>    
+
+  <!-- 게시글 조회 -->
+  <select id="select" resultMap="boardMap">
+    SELECT b.*
+          ,'board' AS parent_table
+    FROM board b
+    WHERE no = #{no}
+  </select>
+
+  <!-- 게시글 등록 -->
+  <insert id="insert" useGeneratedKeys="true" keyProperty="no">
+    INSERT INTO board ( id, title, writer, content )
+    VALUES ( #{id}, #{title}, #{writer}, #{content} )
+  </insert>
+  <!-- useGeneratedKeys="true"
+      : MySQL 의 AUTO_INCREMENT 값을 MyBatis 가 가져와서 board.no에 자동으로 넣어줌 -->
+  <!-- 게시글 수정 -->
+  <update id="update">
+    UPDATE board
+       SET title = #{title}
+          ,writer = #{writer}
+          ,content = #{content}
+    WHERE no = #{no}
+  </update>
+
+  <!-- 게시글 삭제 -->
+  <delete id="delete">
+    DELETE FROM board
+    WHERE no = #{no}
+  </delete>
+  
+  <!-- 데이터 개수 조회 -->
+  <select id="count" resultType="long">
+    SELECT COUNT(*)
+    FROM board
+  </select>
+</mapper>
