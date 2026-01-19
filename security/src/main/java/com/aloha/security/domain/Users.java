@@ -1,5 +1,3 @@
-package com.aloha.security.domain;
-
 import java.util.Date;
 import java.util.List;
 
