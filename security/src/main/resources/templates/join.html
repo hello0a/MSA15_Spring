@@ -19,6 +19,7 @@
         <main class="form-signin login-box w-100 m-auto">
             <form id="form" action="/join" method="post" class="needs-validation" onsubmit="return checkSubmit(event)">
                 <!-- CSRF TOKEN -->
+                 <!-- ${_csrf.token} : 시큐리니가 생성하여 보내주는 것으로, 있어야 시큐리티 적용 가능?? -->
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 
                 <div class="input-group my-2">

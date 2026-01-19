@@ -1,22 +1,104 @@
 package com.aloha.security.config;
 
+import javax.sql.DataSource;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.BadSqlGrammarException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
-@Configuration
-@EnableWebSecurity
+import com.aloha.security.handler.CustomAccessDeniedHandler;
+import com.aloha.security.handler.LoginFailureHandler;
+import com.aloha.security.handler.LoginSuccessHandler;
+import com.aloha.security.handler.LogoutSuccessHandler;
+import com.aloha.security.handler.LogoutSuccessHandler;
+import com.aloha.security.service.UserDetailServiceImpl;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * 방식 3가지!
+ * 인메모리 방식
+ * JDBC 방식    -> 맨 처음 해본 방식!
+ * 사용자 정의 인증     -> 나중에 바꾼 방식!
+ */
+
+@Slf4j
+@Configuration  // Bean 등록 설정 클래스
+@EnableWebSecurity  // 스프링 시큐리티 설정 빈으로 등록
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final DataSource dataSource;
+    private final UserDetailServiceImpl userDetailServiceImpl;
+    private final LoginSuccessHandler   loginSuccessHandler;
+    private final LoginFailureHandler loginFailureHandler;
+    private final LogoutSuccessHandler logoutSuccessHandler;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
+
     // 스프링 시큐리티 설정 메서드
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // 인가 설정
+        log.info("스프링 시큐리티 설정");
+         // ✅ 인가 설정
+        // requestMatchers : 어디까지 허용해줄 것인가?
+        // 인가 : 큰 틀 / 메서드 : 세부 틀
         http.authorizeHttpRequests(auth -> auth
-                                    .requestMatchers("/**").permitAll());
+                                    .requestMatchers("/admin", "/admin/").hasRole("ADMIN")
+                                    .requestMatchers("/**").permitAll());   // 전체 허용
+        // 기본 로그인 처리 와 로그인 ? 처리한대 (람다식)
+        // 🔐 폼 로그인 설정
+        // 폼 로그인 : 폼 태그에서 로그인하는 기능? -> 기본 로그인 화면 제공! (html 없어도 제공!)
+        // /login /logout : post 방식으로 기본 제공
+        // login -> username, password 디폴트!
+        // login 성공 시 기본 값은 이전 경로!(홈 화면이 아닌!)
+        // -> 무조건 홈 화면으로 가려면 따로 설정 필요!
+        http.formLogin( login -> login.loginPage("/login") // 커스텀 로그인 페이지 경로
+                                .loginProcessingUrl("/login")// 로그인 요청 경로
+                                // .usernameParameter("id")    // 아이디 파라미터명
+                                // // .passwordParameter("pw"));  // 비밀번호 파라미터명
+                                // .defaultSuccessUrl("/?login=true")
+                                // .failureUrl("/login?error=true"));    // 로그인 성공 시 이동할 경로
+                                .successHandler(loginSuccessHandler)    // 로그인 성공 행들로 설정
+                                .failureHandler(loginFailureHandler));  // 로그인 실패 핸들러 설정
+        // 인가 설정되어 있어야 폼 로그인 실행 가능!
+
+        // 로그아웃 설정
+        http.logout(logout -> logout
+            .logoutUrl("/logout")   // 로그아웃 요청 경로 -> 바꾸고 싶다면 경로 바꾸기
+            .logoutSuccessUrl("/login?logout=true") // 로그아웃 성공 시 이동할 경로
+            .invalidateHttpSession(true)        // 세션 초기화
+            .deleteCookies("remember-id")       // 로그아웃 시, 쿠키 삭제(아이디 저장)
+            // .logoutSuccessHandler(logoutSuccessHandler) // 로그아웃 성공 핸들러 설정
+            // successurl 과 successhandler 둘 중 하나만!
+        );
+        
+        // 예외 처리
+        http.exceptionHandling(exception -> exception
+            // .accessDeniedPage("/exception") // 접근 거부 시 이동할 경로
+            .accessDeniedHandler(customAccessDeniedHandler) // 접근 거부 핸들러 설정
+        );
+        // 사용자 정의 인증
+        http.userDetailsService(userDetailServiceImpl);
+
+        // 🔄 자동 로그인 설정
+        http.rememberMe(me -> me 
+                        .key("aloha")
+                        .tokenRepository(tokenRepository())     // 자동 로그인 저장소 빈 지정
+                        .tokenValiditySeconds(60 * 60 * 24 * 7)    // 자동 로그인 토큰 유효 기간 -> 일주일 내 계속 들어오면 계속 연장!
+        );
+        // filter 가 토큰 있다면 db 보내고, persistent_logins 에서 확인 후 user에 있다면 security에 등록!
         return http.build();
     }
     /**
@@ -26,5 +108,81 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    /**
+     * JDBC 인증 방식으로 사용자정보 서비스 빈 등록
+     * @return
+     */
+    // @Bean
+    // public UserDetailsService userDetailsService() {
+    //     // JdbcUserDetailsManager 통해서 어떤 DB에 접속할건지 알려주기!
+    //     JdbcUserDetailsManager userDetailsManager 
+    //             = new JdbcUserDetailsManager(dataSource);
+
+    //     // 사용자 인증 쿼리
+    //     String sql1 = " SELECT username, password, enabled "
+    //                 + " FROM user "
+    //                 + " WHERE username = ? "
+    //                 ;
+    //     // 사용자 권한 쿼리
+    //     String sql2 = " SELECT username, auth "
+    //                 + " FROM user_auth "
+    //                 + " WHERE username = ? "
+    //                 ;
+    //     userDetailsManager.setUsersByUsernameQuery(sql1);
+    //     userDetailsManager.setAuthoritiesByUsernameQuery(sql2);
+    //     return userDetailsManager;
+    // }
+    // -> 이제는 사용자 정의로 빈 등록하겠다!
+
+    /**
+     * 🍃 AuthenticationManager 인증 관리자 빈 등록
+     * @param authenticationConfiguration
+     * @return
+     * @throws Exception
+    */
+    @Bean
+    public AuthenticationManager authenticationManager( 
+        // AuthenticationConfiguration 인증 설정 매개변수 가져와서 등록??
+                                    AuthenticationConfiguration authenticationConfiguration ) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    /**
+    * 🍃 자동 로그인 저장소 빈 등록
+    * ✅ 데이터 소스
+    * ⭐ persistent_logins 테이블 생성
+            create table persistent_logins (
+                username varchar(64) not null
+                , series varchar(64) primary key
+                , token varchar(64) not null
+                , last_used timestamp not null
+            );
+    * 🔄 자동 로그인 프로세스
+    * ✅ 로그인 시 
+    *     ➡ 👩‍💼(ID, 시리즈, 토큰) 저장
+    * ✅ 로그아웃 시, 
+    *     ➡ 👩‍💼(ID, 시리즈, 토큰) 삭제
+    * @return
+    */
+    @Bean
+    public PersistentTokenRepository tokenRepository() {
+        // JdbcTokenRepositoryImpl : 토큰 저장 데이터 베이스를 등록하는 객체
+        JdbcTokenRepositoryImpl repositoryImpl = new JdbcTokenRepositoryImpl();
+        // ✅ 토큰 저장소를 사용하는 데이터 소스 지정
+        // - 시큐리티가 자동 로그인 프로세스를 처리하기 위한 DB를 지정합니다.
+        repositoryImpl.setDataSource(dataSource);   
+        // persistent_logins 테이블 생성
+        try {
+            repositoryImpl.getJdbcTemplate().execute(JdbcTokenRepositoryImpl.CREATE_TABLE_SQL);
+        } 
+        catch (BadSqlGrammarException e) {
+            log.error("persistent_logins 테이블이 이미 존재합니다.");   
+        }
+        catch (Exception e) {
+            log.error("자동 로그인 테이블 생성 중 , 예외 발생");
+        }
+        return repositoryImpl;
     }
 }

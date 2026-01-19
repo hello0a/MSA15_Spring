@@ -3,7 +3,13 @@ package com.aloha.security.service;
 import com.aloha.security.domain.UserAuth;
 import com.aloha.security.domain.Users;
 
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+
 public interface UserService {
+
+    // 로그인
+    public boolean login(Users user, HttpServletRequest request) throws Exception;
     // 회원 조회
     public Users select(String username) throws Exception;
     // 회원 가입

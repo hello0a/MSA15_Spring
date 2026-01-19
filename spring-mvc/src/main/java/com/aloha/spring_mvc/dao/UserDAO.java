@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 // : DB 관련 기능을 담당하는 DAO
 // -> Spring 이 자동으로 객체(bean) 만들어서 Service 에서 @Autowired 로 가져와 쓸 수 있음
 // 즉, DB 담당자
-@slf4j
+@Slf4j
 // 로그 출력 도구 자동 생성
 // log 라는 이름의 Logger 객체 자동으로 만들어줌
 public class UserDAO {

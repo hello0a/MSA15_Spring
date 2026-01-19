@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,6 +16,7 @@
         </div>
 
         <!-- 비 로그인 시 -->
+         <!-- isAnonymous : 인증X -> true -->
         <th:block sec:authorize="isAnonymous()">
             <div class="d-grid gap-2">
                 <a href="/login" class="btn btn-lg btn-primary">로그인</a>
@@ -24,20 +25,26 @@
         </th:block>
 
         <!-- 로그인 시 -->
+         <!-- isAuthenticated : 인증O -> true -->
         <th:block sec:authorize="isAuthenticated()">
             <div class="card">
                 <div class="inner p-4">
                     <div class="d-flex flex-column align-items-center">
-                        <div class="item my-2">
+                        <!-- <div class="item my-2">
                             <img th:src="${user.profile}" alt="프로필" class="rounded-circle">
-                        </div>
+                        </div> -->
                         <div class="item my-2">
                             <h3 th:text="${user.name}"></h3>
+                             <!-- #authentication.principal. : 모델에 등록하지 않고 바로 사용 가능 -->
+                            <!-- <h3 th:text="${#authentication.principal.user.name}"></h3> -->
                         </div>
                         <div class="item my-2">
                             <h5 th:text="${user.email}"></h5>
+                            <!-- <h5 th:text="${#authentication.principal.user.email}"></h5> -->
                         </div>
                         <div class="item my-2 w-100">
+                            <!-- <span sec:authentication="principal">인증된 사용자</span> -->
+                             <!-- customUser 가져와서 접근...? -->
                             <span sec:authentication="principal">인증된 사용자</span>
                         </div>
                     </div>
