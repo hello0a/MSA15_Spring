@@ -6,6 +6,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 <mapper namespace="com.aloha.security.mapper.BoardMapper">
     <resultMap id="boardMap" type="Board">
         <id property="no" column="no"/>
+
         <result  property="id" column="id"/>
         <result  property="title" column="title"/>
         <result  property="content" column="content"/>
@@ -14,6 +15,27 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result  property="updatedAt" column="updated_at"/>
         <!-- 1:1 매핑 = association -->
         <association property="user" select="selectUser" column="user_no" javaType="Users"></association>
+        <!-- javaType vs ofType vs type 
+            1. type : resultMap 에서 사용!
+                    resultMap 전체가 어떤 객체로 매핑될지 지정
+                    -> 이 resultMap 으로 조회된 결과는 모두 UserAuth 객체
+                    -> 즉, resultMap 의 루트 객체 타입 의미!
+            2. javaType : association / result 에서 사용!
+                    단일 객체의 타입 지정
+                    -> property = "user" 로 인해 실제로는 Users 타입 객체 들어감
+                    -> 즉, 이 필드는 Users 객체!
+            3. ofType : collection 에서 사용!
+                    collection 의 요소 element 타입 지정
+                    -> list, set 같은 컬렉션의 요소 하나하나 타입 지정
+                    -> 즉, authList 안에 애들은 UserAuth 객체들이야! 
+            🎯 직관적인 이해 예시
+            Users ← 1:1 → UserDetail
+            → Users 객체 안에 UserDetail 객체 하나 들어감
+            → association + javaType
+
+            Users ← 1:N → AuthList
+            → Users 객체 안에 권한(UserAuth) 여러 개 들어감
+            → collection + ofType-->
     </resultMap>
 
     <select id="selectUser" resultType="Users">
@@ -54,10 +76,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <update id="update">
         UPDATE board
         <set>
-            <if test="title != null and title != ' '">
+            <if test="title != null and title != ''">
                 title = #{title},
             </if>
-            <if test="content != null and content != ' '">
+            <if test="content != null and content != ''">
                 content = #{content}
             </if>
         </set>

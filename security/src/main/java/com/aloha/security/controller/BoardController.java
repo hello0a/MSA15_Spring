@@ -87,7 +87,9 @@ public class BoardController {
     // - 서비스 메서드를 권한 제어 로직으로 활용하는 방법
     //  : "@빈이름" 형태로 특정 빈의 메서드를 호출 가능
     //  * 여기서는 @BoardService.isOwner( {id}, {userNo} )
-    @PreAuthorize(" #p1 != null and @BoardService.isOwner( #p1, authentication.principal.user.no ) ")
+    // 관리자 + 작성자 검증
+    // or : 관리자만 검증되어도 뒤에 코드는 검증할 필요 없이 true 출력!
+    @PreAuthorize(" (hasRole('ADMIN')) or #p1 != null and @BoardService.isOwner( #p1, authentication.principal.user.no ) ")
     @GetMapping("/update/{id}")
     public String update(Model model, @PathVariable("id") String id) throws Exception {
         Board board = boardService.selectById(id);
@@ -95,7 +97,7 @@ public class BoardController {
         return "board/update";
     }
     // 게시글 수정 처리 - [PUT] /board
-    @PreAuthorize(" #p0 != null and @BoardService.isOwner( #p0.id, authentication.principal.user.no ) ")
+    @PreAuthorize(" (hasRole('ADMIN')) or #p0 != null and @BoardService.isOwner( #p0.id, authentication.principal.user.no ) ")
     @PutMapping("")
     public ResponseEntity<?> update(@RequestBody Board board){
         try {
@@ -110,7 +112,7 @@ public class BoardController {
         }
     }
     // 게시글 삭제 처리 - [DELETE] /board/{id}
-    @PreAuthorize(" #p0 != null and @BoardService.isOwner( #p0, authentication.principal.user.no ) ")
+    @PreAuthorize(" (hasRole('ADMIN')) or #p0 != null and @BoardService.isOwner( #p0, authentication.principal.user.no ) ")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable("id") String id) {
         try {

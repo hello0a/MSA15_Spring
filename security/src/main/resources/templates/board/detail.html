@@ -32,8 +32,9 @@
             </div>
             <div class="d-grid gap-2 d-md-flex justify-content-center">
                 <button type="button" class="btn btn-outline-primary w-100" onclick="moveList()">목록</button>
-                <!-- 작성자 검증 : 작성자 본인이 아니면 수정 버튼 안보임! -->
-              <th:block th:if="${@BoardService.isOwner( board.id, #authentication.principal.user.no)}">
+                <!-- 작성자 검증 : 작성자 본인이 아니면 수정 버튼 안보임! 
+                    + 관리자 검증 추가!-->
+              <th:block th:if="${ #authorization.expression('hasRole(''ADMIN'')') or @BoardService.isOwner( board.id, #authentication.principal.user.no)}">
                 <button type="button" class="btn btn-primary w-100" onclick="moveUpdate()">수정</button>
               </th:block>
             </div>

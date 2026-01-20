@@ -58,7 +58,7 @@ public class SecurityConfig {
         // requestMatchers : 어디까지 허용해줄 것인가?
         // 인가 : 큰 틀 / 메서드 : 세부 틀
         http.authorizeHttpRequests(auth -> auth
-                                    .requestMatchers("/admin", "/admin/").hasRole("ADMIN")
+                                    .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
                                     .requestMatchers("/**").permitAll());   // 전체 허용
         // 기본 로그인 처리 와 로그인 ? 처리한대 (람다식)
         // 🔐 폼 로그인 설정
