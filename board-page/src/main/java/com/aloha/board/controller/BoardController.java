@@ -162,4 +162,7 @@ public class BoardController {
     return "redirect:/board/update?no=" + no + "&error";
   }
 }
-
+/**
+ * GET : 작성 폼 띄울 때 board 빈 객체 넘김 -> 넘기고
+ * POST : form 에서 입력받은 값을 board 객체로 받음 -> 받고
+ */

@@ -17,9 +17,41 @@
                 <div class="col-12 col-md-10 col-lg-10">
                     <h1 class="text-center">게시글 조회</h1>
                     <!-- th:object="${board}" 객체 등록 시 그 하위는 필드만 담으면 OK! id, name, th:value까지 넣어준 것! -->
+                     <!-- form 태그 : 사용자 입력을 서버로 보내는 "입력 양식" 태그
+                          action="/board/create" : 사용자가 제출하면 이 주소로 보냄
+                          method="post" : 서버에게 새로운 데이터 생성 및 수정할 때 쓰는 방식
+                          th:object="${board}" : 타임리프가 board 라는 객체와 연결해서 form 채움
+                          즉, 게시글 작성 페이지에서 사용자가 제목, 내용 입력하면,
+                                그 내용을 서버의 /board/create 주소로 보내라! 의미
+                                그리고, 이 form은 board 라는 객체와 연결되어 있어! 라는 것을
+                                타임리프에게 알려주는 것
+                          비유
+                          1. <form> : 우편봉투
+                          2. aciont : 봉투에 적는 주소
+                          3. method : 편지를 보낼 방식
+                          4. th:object : 편지 안에 어던 양직(이름, 내용, 날짜) 채울지
+                          
+                          form 에서 벌어지는 일!
+                          1. 사용자가 제목 내용 입력
+                          2. form 이 지정된 '주소'로 주어진 '방식'을 통해 서버에 전송
+                          3. 서버는 board 객체 받아서 DB 저장-->
+
                     <form action="/board/create" method="post" th:object="${board}">
                         <div class="mb-3">
                             <label for="" class="form-label">제목</label>
+                            <!-- <input type="text" : 글자 입력하는 칸
+                                class="form-control" : Bootstrap 이라는 CSS 프레임워크 클래스 (예쁘게 꾸미는)
+                                th:field="*{title}" : board.title 값과 연결! -->
+                            <!-- th:field vs th:value
+                                1. th:value : 단순히 값만 넣어줌
+                                    -> title 값 보여주기만!
+                                    -> 사용자 입력 값이 서버로 갈대 자동처리X -> name 속성 직접 지정!
+                                2. th:field : 값 넣기 + 이름(name) 자동 지정 + 폼 전송 연결
+                                    -> 화면에 값 표시(the:value 기능) + name 속성 자동 생성 + 입력 시 자동 매핑 + 폼 전송 시 @ModelAttribute 자동 바인딩
+                                    -> 입력카과 백엔드 객체 연결해주는 폼 전용 기능!
+                                3. 가장 큰 차이 name
+                                    -> 있어야 서버에서 받는 변수 이름 맞음!
+                                    -> 폼이 서버로 데이터 보낼때는 반드시 name="변수명" 필요! -->
                             <input type="text" class="form-control" th:field="*{title}"
                                 aria-describedby="helpTitle" placeholder="제목을 입력해주세요" readonly/>
                             <!-- <small id="helpTitle" class="form-text text-muted">제목을 입력해주세요</small> -->
@@ -42,6 +74,12 @@
                                         <div class="card">
                                             <!-- <a th:href="@{/files/{id}(id=${file.id})}" target="_blank">다운로드</a> 
                                                     새창으로 이미지 열기-->
+                                            <!-- 서버에 저장된 이미지 파일을 화면에 보여주는 태그img
+                                                @{...} : Thymeleaf 의 URL 표현식
+                                                        -> 동적으로 URL 만들어주는 문법
+                                                /files/{id} : {} 는 변수 자리(placeholder)
+                                                (id=${file.id}) : file.id 값을 {id} 자리에 넣으라는 뜻
+                                                ex) file.id = 7 라면, /file/7 경로가 img src 에 들어가는 것! -->
                                             <img th:src="@{/files/{id}(id=${file.id})}" th:alt="${file.name}" class="card-img-top"
                                                     style="height: 140px; object-fit: contain;">
                                             <!-- 대표 파일 여부 -->
@@ -65,6 +103,10 @@
                                                             a < b -> lt (less than)
                                                             a <= b -> le (less equal)
                                                         -->
+                                                            <!-- th:text="|${file.size} B|" : | 템플릿 문법 |
+                                                                                            -> Thymeleaf 의 텍스트 템플릿 문법
+                                                                                            -> 문자와 변수 섞어 출력하고 싶을 때 사용!
+                                                                                            ex) file.size = 800 -> 800 B 로 출력 -->
                                                             <th:block th:if="${file.size lt 1024}"
                                                                     th:text="|${file.size} B|"></th:block>
                                                             <!-- #numbers.formatDecimal (값, 정수부분 최소자리수, 소수부분 자리수)-->
@@ -104,9 +146,18 @@
     <script>
         // 업데이트 no (모델 객체) 자바스크립트로 가져오는 방법
         // 자바 동작 후 자바스크립트 동작
+        /**
+         * 서버(spring) 가 가진 board.no 값을 JS 변수 no 안에 넣는 코드!
+         * -> HTML 은 ${..} 이지만, JS 는 [[...]] 이다
+         * -> [[...]] : 타임리프의 JS 내 문자열 치환 문법
+         *              타임리프가 HTML 렌더링할 때 [[...]] 안의 값을 실제 값으로 바꿔줌
+         * -> '     ' : 값이 숫자여도 문자열처럼 넣어주기 가능!
+         */
         let no = '[[${board.no}]]'
         // 목록 화면 이동
         function moveList() {
+            // location.href : 현재 페이지의 URL 주소
+            //              -> 새로운 주소 넣으면, 그 주소로 페이지 이동!
             location.href = '/board/list'
         }
         // 수정 화면 이동
