@@ -149,6 +149,26 @@
             "projectName": "security",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-ThymeleafApplication<thymeleaf>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.aloha.thymeleaf.ThymeleafApplication",
+            "projectName": "thymeleaf",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-LayoutApplication<layout>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.aloha.layout.LayoutApplication",
+            "projectName": "layout",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }
